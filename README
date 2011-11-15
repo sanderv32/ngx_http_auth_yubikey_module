@@ -1,0 +1,68 @@
+Nginx module to use a Yubikey for simple http authentication
+============================================================
+
+Requirements
+------------
+
+yubico-c-client (you can get it at https://github.com/Yubico/yubico-c-client)
+curl (use the version of your OS)
+
+
+Compilation
+-----------
+
+When compiling from source build as usual adding the -add-module option::
+
+  ./configure --add-module=$PATH_TO_MODULE
+
+Configuration
+-------------
+
+The module only has two directives:
+
+- "auth_yubikey": This is the http authentication realm. 
+
+- "auth_yubikey_client_id": This is the client id provided by Yubico.
+
+- "auth_yubikey_secret_key": This is the secret key provided by Yubico.
+
+- "auth_yubikey_file": Path to the user to key mapping file. The file
+  contains the username and first 12 chars of your key (just press your
+  yubikey once the module will ignore the rest). If this directive is
+  not included every user with a valid key which is registrated at the
+  Yubico API can authenticate.
+
+- "auth_yubikey_ttl": Set the cache timeout is seconds for after the
+  first login of the user. Default this is set to 24 hours. If set to
+  a low value the user needs to login everytime because of the replayed
+  OTP.
+
+You have to obtain an Yubico API key at https://upgrade.yubico.com/getapikey 
+to get this module working.
+
+Examples
+--------
+
+To protect everything under "/yubikey" you will add the following to the
+"nginx.conf" file:
+
+  location /yubikey {
+    auth_yubikey "Restricted Zone";
+    auth_yubikey_client_id "1234";
+    auth_yubikey_secret_key "1Ab+CdEfgHi/jkl2M3nOp4qrsT5=";
+    auth_yubikey_file "/etc/yubikey.conf";
+    auth_yubikey_ttl "43200";
+  }
+
+In the file "/etc/yubikey.conf" put the username followed by a colon
+and after the colon just press your Yubikey once.
+
+Example:
+
+admin:ekuhubcruhrkrhkicucbevftickivilrfekvntkjbnvv
+
+Caveats
+-------
+
+The API url is hardcoded in the module at the moment. This will be changed in the
+future.
