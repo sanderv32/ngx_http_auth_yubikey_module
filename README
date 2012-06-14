@@ -18,7 +18,7 @@ When compiling from source build as usual adding the -add-module option::
 Configuration
 -------------
 
-The module only has two directives:
+The module has the following directives:
 
 - "auth_yubikey": This is the http authentication realm. 
 
@@ -66,3 +66,11 @@ Caveats
 
 The API url is hardcoded in the module at the moment. This will be changed in the
 future.
+
+
+Notes
+-----
+
+Be sure you download the latest version of the yubico-c-client library. In the old
+version there where some bugs which effected the authentication process in this 
+module.

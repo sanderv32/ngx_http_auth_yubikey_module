@@ -47,11 +47,11 @@
 /* Cached credentials structure */
 typedef struct {
 	ngx_int_t					ttl;
-	u_char						md5[16];
+	u_char						md5[MD5_DIGEST_LENGTH];
 } ngx_cached_cred_t;
 
 typedef struct {
-    ngx_str_t					realm;
+	ngx_str_t					realm;
 	ngx_str_t					client_id;
 	ngx_str_t					secret_key;
 	ngx_int_t					ttl;
@@ -193,13 +193,16 @@ ngx_http_auth_yubikey_otp_handler(ngx_http_request_t *r, void *conf)
 	ngx_uint_t	level, i, j;
 	ngx_md5_t	md5;
 	ngx_str_t	user_file, user;
-	u_char		key[22], *p, *ykey, md5_buf[16];
+	u_char		key[22], *p, *ykey, md5_buf[MD5_DIGEST_LENGTH];
 	u_char		buf[NGX_HTTP_AUTH_BUF_SIZE];
 	u_char		tmpbuf[NGX_HTTP_AUTH_BUF_SIZE];
 	base64_decodestate state;
 	ykclient_t *ykc;
 
 	ngx_http_auth_yubikey_loc_conf_t *alcf = conf;
+
+	ngx_memset(buf, 0, sizeof(buf));
+	ngx_memset(md5_buf, 0, sizeof(md5_buf));
 
 	for(len=0; len < r->headers_in.user.len; len++)
 		if ( r->headers_in.user.data[len] == ':' ) break;
@@ -260,7 +263,7 @@ ngx_http_auth_yubikey_otp_handler(ngx_http_request_t *r, void *conf)
 
 	for(i=0; i < alcf->count; i++) {
 		if ( alcf->cached_cred[i].md5 ) {
-			if ( ngx_memcmp(alcf->cached_cred[i].md5, md5_buf, 16) == 0 ) {
+			if ( ngx_memcmp(alcf->cached_cred[i].md5, md5_buf, MD5_DIGEST_LENGTH) == 0 ) {
 				/* User is already cached, check ttl */
 				/* timeout with time now             */
 				if (alcf->cached_cred[i].ttl < time(NULL)) {
@@ -295,11 +298,11 @@ ngx_http_auth_yubikey_otp_handler(ngx_http_request_t *r, void *conf)
 	alcf->cached_cred[j].ttl = time(NULL) + alcf->ttl;
 	/*alcf->cached_cred[j].md5.data = ngx_palloc(r->pool, 17);
 	alcf->cached_cred[j].md5.len = 17;*/
-	p = ngx_cpymem(alcf->cached_cred[j].md5, md5_buf, 16);
+	p = ngx_cpymem(alcf->cached_cred[j].md5, md5_buf, MD5_DIGEST_LENGTH);
    	*p = '\0';
 
 	ngx_memset(tmpbuf, 0, sizeof(tmpbuf));
-	for(i=0; i<16; i++) {
+	for(i=0; i<MD5_DIGEST_LENGTH; i++) {
 		sprintf(tmpbuf,"%s%2.2x",tmpbuf,alcf->cached_cred[j].md5[i]);
 	}
 
