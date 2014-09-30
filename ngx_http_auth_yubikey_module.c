@@ -356,7 +356,7 @@ ngx_http_auth_yubikey_otp_handler(ngx_http_request_t *r, void *conf)
 			if (ngx_strncmp(ykey, r->headers_in.passwd.data, 12) == 0) {
 				rc = ykclient_request (ykc, (char*)r->headers_in.passwd.data);
 
-				if ((rc=ykclient_check_signature(ykc))!=YKCLIENT_OK) {
+				if (rc!=YKCLIENT_OK) {
         			ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                     			  "ykclient error: %s",
                     			  ykclient_strerror(rc));
