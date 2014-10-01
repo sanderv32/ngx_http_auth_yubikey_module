@@ -33,7 +33,7 @@ The module has the following directives:
   Yubico API can authenticate.
 
 - "auth\_yubikey\_ttl": Set the cache timeout is seconds for after the
-  first login of the user. Default this is set to 24 hours. If set to
+  first login of the user. Default is set to 24 hours. If set to
   a low value the user needs to log-in every-time because of the replayed
   OTP.
 

@@ -377,7 +377,8 @@ ngx_http_auth_yubikey_otp_handler(ngx_http_request_t *r, void *conf)
                     			  ykclient_strerror(rc));
 					ykclient_done (&ykc);
     				ngx_memzero(&alcf->cached_cred[cslot], sizeof(ngx_cached_cred_t));
-					return NGX_HTTP_FORBIDDEN;
+					//return NGX_HTTP_FORBIDDEN;	
+					return ngx_http_auth_yubikey_set_realm(r, &alcf->realm);
 				}
         	} else {
 				if (r->connection->log->log_level & NGX_LOG_DEBUG_HTTP) {
