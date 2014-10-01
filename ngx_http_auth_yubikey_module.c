@@ -519,3 +519,6 @@ ngx_http_auth_yubikey_close(ngx_file_t *file)
                       ngx_close_file_n " \"%s\" failed", file->name.data);
     }
 }
+
+
+/* vim: set ts=4 sw=8 tw=0 noet :*/
