@@ -342,7 +342,7 @@ ngx_http_auth_yubikey_otp_handler(ngx_http_request_t *r, void *conf)
 		return NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 
-    ykclient_set_url_template(ykc, "https://api.yubico.com/wsapi/verify?id=%d&otp=%s");
+    ykclient_set_url_template(ykc, "https://api.yubico.com/wsapi/2.0/verify?id=%d&otp=%s");
     ykclient_set_client (ykc, atoi((char*)alcf->client_id.data), declen, (char*)key);
 
 	/* Yubikey exist on the server of Yubico, now check the key against the first 12 chars */
