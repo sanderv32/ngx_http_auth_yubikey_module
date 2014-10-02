@@ -303,7 +303,7 @@ ngx_http_auth_yubikey_otp_handler(ngx_http_request_t *r, void *conf)
 
 	ngx_memset(tmpbuf, 0, sizeof(tmpbuf));
 	for(i=0; i<MD5_DIGEST_LENGTH; i++) {
-		sprintf(tmpbuf,"%s%2.2x",tmpbuf,alcf->cached_cred[j].md5[i]);
+		sprintf((char*)tmpbuf,"%s%2.2x",tmpbuf,alcf->cached_cred[j].md5[i]);
 	}
 
 	if (r->connection->log->log_level & NGX_LOG_DEBUG_HTTP) {
@@ -316,7 +316,7 @@ ngx_http_auth_yubikey_otp_handler(ngx_http_request_t *r, void *conf)
 
 	/* Initialize base64 decoder */
 	base64_init_decodestate(&state);
-	declen=base64_decode_block(alcf->secret_key.data, strlen(alcf->secret_key.data), key, &state);
+	declen=base64_decode_block((char*)alcf->secret_key.data, strlen((char *)alcf->secret_key.data), (char*)key, &state);
 
 	/* Check if auth_yubikey_client_id is set to a proper value */
     if (ngx_atoi(alcf->client_id.data, alcf->client_id.len) <= 0)
@@ -327,7 +327,7 @@ ngx_http_auth_yubikey_otp_handler(ngx_http_request_t *r, void *conf)
     }
 
 	/* Check if the password send to the server has a valid OTP length */
-    if (strlen(r->headers_in.passwd.data) < 32)
+    if (strlen((char*)r->headers_in.passwd.data) < 32)
     {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
         			  "error: ModHex encoded token must be at least 32 characters.");
@@ -342,21 +342,21 @@ ngx_http_auth_yubikey_otp_handler(ngx_http_request_t *r, void *conf)
 		return NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 
-    ykclient_set_url_template(ykc, "https://api.yubico.com/wsapi/verify?id=%d&otp=%s");
-    ykclient_set_client (ykc, atoi(alcf->client_id.data), declen, key);
+    ykclient_set_url_template(ykc, "https://api.yubico.com/wsapi/2.0/verify?id=%d&otp=%s");
+    ykclient_set_client (ykc, atoi((char*)alcf->client_id.data), declen, (char*)key);
 
 	/* Yubikey exist on the server of Yubico, now check the key against the first 12 chars */
 	if (alcf->user_file.value.len > 0) {
-		if ( strstr(buf, user.data) ) {
+		if ( strstr((char*)buf, (char*)user.data) ) {
 			/* User found in file, check against key */
-			p = strstr(buf, user.data);
-			ykey = strstr(p, ":")+1;
-			*strstr(ykey, "\n") = '\0';
+			p = (u_char*)strstr((char*)buf, (char*)user.data);
+			ykey = (u_char*)strstr((char*)p, ":")+1;
+			*strstr((char*)ykey, "\n") = '\0';
 
 			if (ngx_strncmp(ykey, r->headers_in.passwd.data, 12) == 0) {
-				rc = ykclient_request (ykc, r->headers_in.passwd.data);
+				rc = ykclient_request (ykc, (char*)r->headers_in.passwd.data);
 
-				if ((rc=ykclient_check_signature(ykc))!=YKCLIENT_OK) {
+				if (rc!=YKCLIENT_OK) {
         			ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                     			  "ykclient error: %s",
                     			  ykclient_strerror(rc));
@@ -519,3 +519,6 @@ ngx_http_auth_yubikey_close(ngx_file_t *file)
                       ngx_close_file_n " \"%s\" failed", file->name.data);
     }
 }
+
+
+/* vim: set ts=4 sw=8 tw=0 noet :*/
